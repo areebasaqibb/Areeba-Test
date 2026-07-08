@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String
+
+  business  Business?
+  
+  createdAt DateTime  @default(now())
+}
+
+model Business {
+  id        String    @id @default(uuid())
+  name      String
+  
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  ingredients Ingredient[]
+  products    Product[]
+  
+  createdAt DateTime  @default(now())
+}
+
+model Ingredient {
+  id          String    @id @default(uuid())
+  name        String
+  cost        Float
+  unit        String    // e.g. "kg", "g", "cup"
+  
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  sellingPrice Float?
+
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+}
