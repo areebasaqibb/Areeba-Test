@@ -4,13 +4,21 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
+const { Pool } = require('pg');
+const { PrismaPg } = require('@prisma/adapter-pg');
 const { OpenAI } = require('openai');
 
 const app = express();
-const prisma = new PrismaClient();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const connectionString = process.env.DATABASE_URL;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
+const openai = new OpenAI({ 
+  apiKey: process.env.openrouter_apikey,
+  baseURL: 'https://openrouter.ai/api/v1'
+});
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-for-beginners';
 
 app.use(cors());
@@ -126,13 +134,98 @@ app.post('/api/products', authenticateToken, async (req, res) => {
   res.json(product);
 });
 
+// --- Update & Delete Routes ---
+
+// 6. Business: Update Profile
+app.put('/api/business', authenticateToken, async (req, res) => {
+  const { name } = req.body;
+  try {
+    const business = await prisma.business.update({
+      where: { userId: req.user.id },
+      data: { name },
+    });
+    res.json(business);
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to update business.' });
+  }
+});
+
+// 7. Ingredients: Update
+app.put('/api/ingredients/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { name, cost, unit } = req.body;
+
+  const business = await prisma.business.findUnique({ where: { userId: req.user.id } });
+  if (!business) return res.status(404).json({ error: 'Business not found' });
+
+  // Ownership check
+  const ingredient = await prisma.ingredient.findFirst({ where: { id, businessId: business.id } });
+  if (!ingredient) return res.status(404).json({ error: 'Ingredient not found or access denied' });
+
+  const updated = await prisma.ingredient.update({
+    where: { id },
+    data: { name, cost, unit },
+  });
+  res.json(updated);
+});
+
+// 8. Ingredients: Delete
+app.delete('/api/ingredients/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+
+  const business = await prisma.business.findUnique({ where: { userId: req.user.id } });
+  if (!business) return res.status(404).json({ error: 'Business not found' });
+
+  // Ownership check
+  const ingredient = await prisma.ingredient.findFirst({ where: { id, businessId: business.id } });
+  if (!ingredient) return res.status(404).json({ error: 'Ingredient not found or access denied' });
+
+  await prisma.ingredient.delete({ where: { id } });
+  res.json({ message: 'Ingredient deleted successfully' });
+});
+
+// 9. Products: Update
+app.put('/api/products/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { name, description, sellingPrice } = req.body;
+
+  const business = await prisma.business.findUnique({ where: { userId: req.user.id } });
+  if (!business) return res.status(404).json({ error: 'Business not found' });
+
+  // Ownership check
+  const product = await prisma.product.findFirst({ where: { id, businessId: business.id } });
+  if (!product) return res.status(404).json({ error: 'Product not found or access denied' });
+
+  const updated = await prisma.product.update({
+    where: { id },
+    data: { name, description, sellingPrice },
+  });
+  res.json(updated);
+});
+
+// 10. Products: Delete
+app.delete('/api/products/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+
+  const business = await prisma.business.findUnique({ where: { userId: req.user.id } });
+  if (!business) return res.status(404).json({ error: 'Business not found' });
+
+  // Ownership check
+  const product = await prisma.product.findFirst({ where: { id, businessId: business.id } });
+  if (!product) return res.status(404).json({ error: 'Product not found or access denied' });
+
+  await prisma.product.delete({ where: { id } });
+  res.json({ message: 'Product deleted successfully' });
+});
+
+
 // 6. AI Features
 app.post('/api/ai/calculate-price', authenticateToken, async (req, res) => {
   const { totalCost, desiredMargin } = req.body;
 
   try {
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ error: "OpenAI API Key is missing from .env file." });
+    if (!process.env.openrouter_apikey) {
+      return res.status(500).json({ error: "OpenRouter API Key is missing from .env file." });
     }
 
     const baseSellingPrice = totalCost * (1 + (desiredMargin / 100));
@@ -150,7 +243,7 @@ app.post('/api/ai/calculate-price', authenticateToken, async (req, res) => {
     `;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'google/gemini-2.5-flash',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3,
     });
