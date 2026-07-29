@@ -45,7 +45,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/');
   };
 
-  const navSections = [
+  const navSections: { title: string, items: { label: string, icon: any, href: string, disabled?: boolean }[] }[] = [
     {
       title: 'Insights',
       items: [
