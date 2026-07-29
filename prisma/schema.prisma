@@ -1,0 +1,247 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  password         String
+  name             String
+  resetToken       String?
+  resetTokenExpiry DateTime?
+
+  business         Business?
+  
+  createdAt        DateTime  @default(now())
+}
+
+model Business {
+  id        String    @id @default(uuid())
+  name      String
+  currency  String    @default("USD")
+  currencySymbol String @default("$")
+  measurementSystem String @default("Metric") // Metric or Imperial
+  country   String?
+  state     String?
+  city      String?
+  language  String    @default("en")
+  logo      String?
+  instagram String?
+  whatsapp  String?
+  productsSold String?
+  businessGoal String?
+  websiteUrl   String?
+  profitMargin Float     @default(3.0)
+  
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  ingredients Ingredient[]
+  products    Product[]
+  recipes     Recipe[]
+  customers   Customer[]
+  orders      Order[]
+  activeThemeId String?
+  activeTheme   Theme?   @relation("ActiveTheme", fields: [activeThemeId], references: [id])
+  themes        Theme[]  @relation("BusinessThemes")
+  
+  createdAt DateTime  @default(now())
+}
+
+model Theme {
+  id              String   @id @default(uuid())
+  name            String
+  
+  // Stored as JSON strings containing the CSS variable mappings
+  lightMode       String   
+  darkMode        String   
+  
+  businessId      String
+  business        Business @relation("BusinessThemes", fields: [businessId], references: [id], onDelete: Cascade)
+  
+  activeFor       Business[] @relation("ActiveTheme")
+  createdAt       DateTime @default(now())
+}
+
+model Ingredient {
+  id          String    @id @default(uuid())
+  name        String
+  brand       String?
+  cost        Float
+  unit        String    // e.g. "kg", "g", "cup"
+  stockQuantity Float   @default(0)
+  minStock      Float   @default(0)
+  
+  // AI Research Fields
+  sourcePrice Float?    // Original found price
+  normalizedPrice Float? // Standardized to 1kg or 1L
+  lowestPrice Float?
+  highestPrice Float?
+  confidenceScore Int?   // 0-100
+  priceSources String? // Array of retailers stored as JSON string for SQLite
+  lastUpdated DateTime?  // When AI last checked
+  isAutoPriced Boolean   @default(false)
+  
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  recipeIngredients RecipeIngredient[]
+  flavorIngredients FlavorIngredient[]
+
+  createdAt   DateTime  @default(now())
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  sellingPrice Float?
+  imageUrl    String?
+
+
+  baseRecipeId String?
+  baseRecipe   Recipe?   @relation(fields: [baseRecipeId], references: [id])
+  flavors      ProductFlavor[]
+
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  orderItems  OrderItem[]
+
+  createdAt   DateTime  @default(now())
+}
+
+model Recipe {
+  id          String    @id @default(uuid())
+  name        String
+  category    String?
+  servingSize String?
+  yield       Int?
+  notes       String?
+  laborCost   Float?
+  packagingCost Float?
+  utilitiesCost Float?
+  totalCost     Float?
+  suggestedPrice Float?
+  marketAnalysis String?
+  pricingStrategy String?
+
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  ingredients RecipeIngredient[]
+  orderItems  OrderItem[]
+  products    Product[]
+
+  createdAt   DateTime  @default(now())
+}
+
+
+model RecipeIngredient {
+  id           String    @id @default(uuid())
+  recipeId     String
+  ingredientId String
+  quantity     Float
+  unit         String
+
+  recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+}
+
+model ProductFlavor {
+  id              String   @id @default(uuid())
+  name            String
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  ingredients     FlavorIngredient[]
+  orderItems      OrderItemFlavor[]
+  
+  productionCost  Float?
+  suggestedPrice  Float?
+  profitMargin    Float?
+}
+
+model FlavorIngredient {
+  id               String        @id @default(uuid())
+  productFlavorId  String
+  ingredientId     String
+  quantity         Float
+  unit             String
+  
+  flavor           ProductFlavor @relation(fields: [productFlavorId], references: [id], onDelete: Cascade)
+  ingredient       Ingredient    @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+}
+
+model Customer {
+  id              String    @id @default(uuid())
+  name            String
+  phone           String?
+  instagram       String?
+  address         String?
+  birthday        DateTime?
+  notes           String?
+  totalOrders     Int       @default(0)
+  lifetimeSpending Float    @default(0)
+
+  businessId      String
+  business        Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  orders          Order[]
+
+  createdAt       DateTime  @default(now())
+}
+
+model Order {
+  id            String    @id @default(uuid())
+  orderNumber   String
+  deliveryDate  DateTime?
+  type          String    // "Pickup", "Delivery"
+  address       String?
+  notes         String?
+  paymentStatus String    @default("Pending") // Pending, Paid, Partially Paid
+  orderStatus   String    @default("New")     // New, Confirmed, Preparing, Ready, Completed, Cancelled
+  
+  subtotal      Float     @default(0)
+  deliveryFee   Float     @default(0)
+  total         Float     @default(0)
+  profitEstimate Float    @default(0)
+
+  customerId    String
+  customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  businessId    String
+  business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  items         OrderItem[]
+
+  createdAt     DateTime  @default(now())
+}
+
+model OrderItem {
+  id          String    @id @default(uuid())
+  orderId     String
+  recipeId    String?   // Can be linked to a recipe
+  productId   String?   // Or an arbitrary product
+  quantity    Int       @default(1)
+  priceAtTime Float
+  notes       String?   // Used for mixed box flavor breakdowns or custom requests
+
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  recipe      Recipe?   @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  product     Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  flavors     OrderItemFlavor[]
+}
+
+model OrderItemFlavor {
+  id              String        @id @default(uuid())
+  orderItemId     String
+  productFlavorId String
+  quantity        Int           @default(1)
+
+  orderItem       OrderItem     @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  flavor          ProductFlavor @relation(fields: [productFlavorId], references: [id], onDelete: Restrict)
+}

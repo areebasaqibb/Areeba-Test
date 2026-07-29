@@ -47,3 +47,5 @@ yarn-error.log*
 
 # Docker (if you decide to use it later)
 docker-compose.override.yml
+/generated/prisma
+/generated/prisma
