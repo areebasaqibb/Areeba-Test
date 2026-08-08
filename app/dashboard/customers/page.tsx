@@ -24,8 +24,8 @@ export default function Customers() {
     const token = localStorage.getItem('token');
     try {
       const [resC, resAI] = await Promise.all([
-        fetch('http://localhost:3001/api/customers', { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch('http://localhost:3001/api/ai/customers-insight', { headers: { 'Authorization': `Bearer ${token}` } })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ai/customers-insight`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
       setCustomers(await resC.json());
       const ai = await resAI.json();
@@ -43,7 +43,7 @@ export default function Customers() {
     e.preventDefault();
     const token = localStorage.getItem('token');
     
-    const url = editingCustomerId ? `http://localhost:3001/api/customers/${editingCustomerId}` : 'http://localhost:3001/api/customers';
+    const url = editingCustomerId ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers/${editingCustomerId}` : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers`;
     const method = editingCustomerId ? 'PUT' : 'POST';
 
     try {
@@ -65,7 +65,7 @@ export default function Customers() {
     if (!confirm('Are you sure you want to delete this customer?')) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3001/api/customers/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

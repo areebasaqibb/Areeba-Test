@@ -33,7 +33,7 @@ export default function Ingredients() {
   const loadData = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:3001/api/ingredients', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ingredients`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -70,7 +70,7 @@ export default function Ingredients() {
 
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:3001/api/ai/lookup-ingredient', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ai/lookup-ingredient`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -112,8 +112,8 @@ export default function Ingredients() {
     const token = localStorage.getItem('token');
     
     const url = editingId 
-      ? `http://localhost:3001/api/ingredients/${editingId}`
-      : 'http://localhost:3001/api/ingredients';
+      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ingredients/${editingId}`
+      : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ingredients`;
       
     const method = editingId ? 'PUT' : 'POST';
 
@@ -178,7 +178,7 @@ export default function Ingredients() {
     if (!confirm('Are you sure you want to delete this ingredient?')) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3001/api/ingredients/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ingredients/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

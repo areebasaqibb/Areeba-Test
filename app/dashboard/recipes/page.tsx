@@ -41,8 +41,8 @@ export default function Recipes() {
     const token = localStorage.getItem('token');
     try {
       const [resR, resI] = await Promise.all([
-        fetch('http://localhost:3001/api/recipes', { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch('http://localhost:3001/api/ingredients', { headers: { 'Authorization': `Bearer ${token}` } })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/recipes`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ingredients`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
       setRecipes(await resR.json());
       setIngredientsPool(await resI.json());
@@ -148,7 +148,7 @@ export default function Recipes() {
     setIsAiEstimating(true);
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:3001/api/ai/recipe-estimate', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ai/recipe-estimate`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -182,7 +182,7 @@ export default function Recipes() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    const url = editingId ? `http://localhost:3001/api/recipes/${editingId}` : 'http://localhost:3001/api/recipes';
+    const url = editingId ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/recipes/${editingId}` : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/recipes`;
     
     try {
       const res = await fetch(url, {
@@ -209,7 +209,7 @@ export default function Recipes() {
     if (!confirm('Are you sure you want to delete this recipe?')) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3001/api/recipes/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/recipes/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

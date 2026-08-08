@@ -42,11 +42,11 @@ export default function Orders() {
     const token = localStorage.getItem('token');
     try {
       const [resO, resC, resAI, resP, resR] = await Promise.all([
-        fetch('http://localhost:3001/api/orders', { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch('http://localhost:3001/api/customers', { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch('http://localhost:3001/api/ai/orders-insight', { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch('http://localhost:3001/api/products', { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch('http://localhost:3001/api/recipes', { headers: { 'Authorization': `Bearer ${token}` } })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ai/orders-insight`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/recipes`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
       setOrders(await resO.json());
       setCustomers(await resC.json());
@@ -121,7 +121,7 @@ export default function Orders() {
 
     try {
       if (isNewCustomer && customerSearchQuery) {
-        const custRes = await fetch('http://localhost:3001/api/customers', {
+        const custRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: customerSearchQuery })
@@ -131,7 +131,7 @@ export default function Orders() {
         finalCustomerId = newCust.id;
       }
 
-      const url = editingOrderId ? `http://localhost:3001/api/orders/${editingOrderId}` : 'http://localhost:3001/api/orders';
+      const url = editingOrderId ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/${editingOrderId}` : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders`;
       const method = editingOrderId ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -168,7 +168,7 @@ export default function Orders() {
     if (!confirm('Are you sure you want to delete this order?')) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3001/api/orders/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -239,7 +239,7 @@ export default function Orders() {
   const updateOrderStatus = async (order: any, newStatus: string) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3001/api/orders/${order.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/${order.id}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...order, orderStatus: newStatus })
@@ -255,7 +255,7 @@ export default function Orders() {
   const updatePaymentStatus = async (order: any, newStatus: string) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3001/api/orders/${order.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/${order.id}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...order, paymentStatus: newStatus })

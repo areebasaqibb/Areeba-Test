@@ -190,7 +190,7 @@ export default function MagicPricingWizard() {
       
       const token = localStorage.getItem('token');
       if (token) {
-        fetch('http://localhost:3001/api/recipes', { headers: { 'Authorization': `Bearer ${token}` } })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/recipes`, { headers: { 'Authorization': `Bearer ${token}` } })
           .then(res => res.json())
           .then(data => setRecipes(data))
           .catch(err => console.error(err));
@@ -230,7 +230,7 @@ export default function MagicPricingWizard() {
     setIsEstimating(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/ai/estimate-costs', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ai/estimate-costs`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -276,7 +276,7 @@ export default function MagicPricingWizard() {
     const token = localStorage.getItem('token');
     
     try {
-      const res = await fetch('http://localhost:3001/api/ai/calculate-price', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ai/calculate-price`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -318,7 +318,7 @@ export default function MagicPricingWizard() {
       const token = localStorage.getItem('token');
       const desc = servingSize ? `Minimum order: ${servingSize}` : '';
       const finalPrice = result?.strategies?.[selectedStrategy]?.price || result?.recommendation?.suggestedPrice || 0;
-      const res = await fetch('http://localhost:3001/api/products', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

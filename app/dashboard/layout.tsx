@@ -25,7 +25,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
 
     // Fetch business profile to provide context
-    fetch('http://localhost:3001/api/business', {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/business`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())

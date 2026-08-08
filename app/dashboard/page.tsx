@@ -29,11 +29,11 @@ export default function Dashboard() {
       
       try {
         const [iRes, pRes, rRes, oRes, cRes] = await Promise.all([
-          fetch('http://localhost:3001/api/ingredients', { headers }).then(r => r.json()),
-          fetch('http://localhost:3001/api/products', { headers }).then(r => r.json()),
-          fetch('http://localhost:3001/api/recipes', { headers }).then(r => r.json()),
-          fetch('http://localhost:3001/api/orders', { headers }).then(r => r.json()),
-          fetch('http://localhost:3001/api/customers', { headers }).then(r => r.json())
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ingredients`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/recipes`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers`, { headers }).then(r => r.json())
         ]);
         
         const totalRevenue = oRes.filter((o: any) => o.paymentStatus !== 'Pending').reduce((acc: number, o: any) => acc + (o.total || 0), 0);
@@ -87,7 +87,7 @@ export default function Dashboard() {
       setIsLoadingAdvisor(true);
       const token = localStorage.getItem('token');
       try {
-        const res = await fetch('http://localhost:3001/api/ai/advisor', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ai/advisor`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -109,7 +109,7 @@ export default function Dashboard() {
     e.preventDefault();
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:3001/api/business', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/business`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

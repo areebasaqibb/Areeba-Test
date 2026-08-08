@@ -39,9 +39,9 @@ export default function Products() {
     const token = localStorage.getItem('token');
     try {
       const [prodRes, recRes, ingRes] = await Promise.all([
-        fetch('http://localhost:3001/api/products', { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch('http://localhost:3001/api/recipes', { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch('http://localhost:3001/api/ingredients', { headers: { 'Authorization': `Bearer ${token}` } })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/recipes`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ingredients`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
       setProducts(await prodRes.json());
       setRecipes(await recRes.json());
@@ -133,7 +133,7 @@ export default function Products() {
 
   const handleSubmit = async () => {
     const token = localStorage.getItem('token');
-    const url = editingId ? `http://localhost:3001/api/products/${editingId}` : 'http://localhost:3001/api/products';
+    const url = editingId ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products/${editingId}` : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products`;
     const method = editingId ? 'PUT' : 'POST';
 
     try {
@@ -166,7 +166,7 @@ export default function Products() {
     if (!confirm('Are you sure you want to delete this item?')) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3001/api/products/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
       if (!res.ok) throw new Error('Failed to delete');
       toast.success('Deleted');
       loadData();
@@ -221,7 +221,7 @@ export default function Products() {
     const token = localStorage.getItem('token');
     setUploading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/upload', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/upload`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData

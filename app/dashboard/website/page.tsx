@@ -43,7 +43,7 @@ export default function WebsiteSettings() {
     }
 
     try {
-      const res = await fetch('http://localhost:3001/api/business', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/business`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -103,7 +103,7 @@ export default function BrandThemeSettings() {
 
   const loadThemes = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/themes', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/themes`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -124,7 +124,7 @@ export default function BrandThemeSettings() {
     setIsAnalyzing(true);
     setAiAnalysis(null);
     try {
-      const res = await fetch('http://localhost:3001/api/ai/extract-theme', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ai/extract-theme`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageBase64: base64Image })
@@ -194,7 +194,7 @@ export default function BrandThemeSettings() {
 
   const saveTheme = async (setActive = false) => {
     try {
-      const res = await fetch('http://localhost:3001/api/themes', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/themes`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -218,7 +218,7 @@ export default function BrandThemeSettings() {
 
   const activateTheme = async (id: string) => {
     try {
-      await fetch(`http://localhost:3001/api/themes/${id}/activate`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/themes/${id}/activate`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
