@@ -39,7 +39,8 @@
     "react-dom": "^19.2.7",
     "react-easy-crop": "^6.2.3",
     "react-hot-toast": "^2.6.0",
-    "recharts": "^3.10.0"
+    "recharts": "^3.10.0",
+    "serverless-http": "^4.0.0"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",

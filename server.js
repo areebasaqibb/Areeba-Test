@@ -19,13 +19,7 @@ const multer = require('multer');
 const path = require('path');
 
 // Configure multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(__dirname, 'uploads')),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 const app = express();
@@ -41,7 +35,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-for-beginners';
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+}
 
 // --- Authentication Middleware ---
 const authenticateToken = (req, res, next) => {
@@ -62,8 +58,8 @@ const authenticateToken = (req, res, next) => {
 // 0. Image Upload
 app.post('/api/upload', authenticateToken, upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  const url = `http://localhost:${PORT}/uploads/${req.file.filename}`;
-  res.json({ url });
+  const dataUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+  res.json({ url: dataUrl });
 });
 
 // 1. Auth: Register
@@ -1165,6 +1161,10 @@ app.get('/api/insights', authenticateToken, async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Simplified Beginner Server is running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Simplified Beginner Server is running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
