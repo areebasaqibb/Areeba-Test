@@ -29,54 +29,54 @@ export default function Dashboard() {
       
       try {
         const [iRes, pRes, rRes, oRes, cRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/ingredients`, { headers }).then(r => r.json()),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/products`, { headers }).then(r => r.json()),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/recipes`, { headers }).then(r => r.json()),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders`, { headers }).then(r => r.json()),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers`, { headers }).then(r => r.json())
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/ingredients`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/products`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/recipes`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/orders`, { headers }).then(r => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/customers`, { headers }).then(r => r.json())
         ]);
         
-        const totalRevenue = oRes.filter((o: any) => o.paymentStatus !== 'Pending').reduce((acc: number, o: any) => acc + (o.total || 0), 0);
+        const ingredients = Array.isArray(iRes) ? iRes : [];
+        const products = Array.isArray(pRes) ? pRes : [];
+        const recipes = Array.isArray(rRes) ? rRes : [];
+        const orders = Array.isArray(oRes) ? oRes : [];
+        const customers = Array.isArray(cRes) ? cRes : [];
+
+        const totalRevenue = orders.filter((o: any) => o.paymentStatus !== 'Pending').reduce((acc: number, o: any) => acc + (o.total || 0), 0);
         
         let totalProfit = 0;
-        oRes.forEach((o: any) => {
+        orders.forEach((o: any) => {
           if (o.paymentStatus === 'Pending') return;
           let cost = 0;
           o.items?.forEach((item: any) => {
             if (item.recipeId) {
-               const r = rRes.find((x: any) => x.id === item.recipeId);
+               const r = recipes.find((x: any) => x.id === item.recipeId);
                if (r) cost += (r.totalCost || 0) * item.quantity;
             } else if (item.productId) {
-               const p = pRes.find((x: any) => x.id === item.productId);
+               const p = products.find((x: any) => x.id === item.productId);
                if (p) {
                  if (item.flavors && item.flavors.length > 0) {
-                   // Calculate based on exact flavors selected
                    item.flavors.forEach((f: any) => {
-                     // Since GET /api/orders returns nested flavors: { flavor: { ... } }
-                     // But if it's the client side structure, we might need to find it in `p`. 
-                     // Wait, GET /api/orders now returns: `flavors: [{ flavor: { productionCost: ... }, quantity: ... }]`
                      const flavorCost = f.flavor?.productionCost || 0;
                      cost += flavorCost * f.quantity;
                    });
                  } else if (p.flavors && p.flavors.length > 0) {
-                   // Fallback for old orders: assume first flavor
                    cost += (p.flavors[0].productionCost || 0) * item.quantity;
                  }
                }
             }
           });
-          // Profit is now calculated using subtotal to exclude delivery fees
           totalProfit += ((o.subtotal || 0) - cost);
         });
 
         setStats({
-          ingredients: iRes.length,
-          products: pRes.length,
-          recipes: rRes.length,
-          orders: oRes.length,
+          ingredients: ingredients.length,
+          products: products.length,
+          recipes: recipes.length,
+          orders: orders.length,
           revenue: totalRevenue,
           profit: totalProfit,
-          customers: cRes.length
+          customers: customers.length
         });
       } catch (err) {
         console.error(err);
