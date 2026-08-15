@@ -24,8 +24,8 @@ dist/
 # dev.db
 
 # Prisma specific
-/prisma/dev.db
-/prisma/dev.db-journal
+# /prisma/dev.db
+# /prisma/dev.db-journal
 
 # Logs
 logs
