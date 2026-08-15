@@ -20,9 +20,8 @@ dist/
 .env.production.local
 
 # Databases
-*.db
-*.db-journal
-dev.db
+# *.db
+# dev.db
 
 # Prisma specific
 /prisma/dev.db
