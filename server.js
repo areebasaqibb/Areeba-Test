@@ -22,6 +22,11 @@ const path = require('path');
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+if (!process.env.DATABASE_URL || process.env.DATABASE_URL.startsWith('file:')) {
+  const dbPath = path.join(process.cwd(), 'prisma', 'dev.db');
+  process.env.DATABASE_URL = `file:${dbPath}`;
+}
+
 const app = express();
 const prisma = new PrismaClient();
 const openai = new OpenAI({ 
